@@ -1,9 +1,17 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { GoPlus } from "react-icons/go";
-import { HiPencil } from "react-icons/hi";
+import { HiOutlineCog6Tooth } from "react-icons/hi2";
 
-export function Header() {
+type ActionsProps = {
+  openDialogAddNote?: () => void;
+  openDialogSettings?: () => void;
+};
+
+export function Header({
+  openDialogAddNote,
+  openDialogSettings,
+}: ActionsProps) {
   return (
     <div className="flex items-center justify-between border-b p-4">
       <div className="flex items-center gap-2.5">
@@ -15,14 +23,22 @@ export function Header() {
       </div>
 
       <div className="flex gap-2.5">
-        <Button variant="outline" className="cursor-pointer">
+        <Button
+          onClick={openDialogAddNote}
+          variant="outline"
+          className="size-9 cursor-pointer md:size-auto"
+        >
           <GoPlus className="size-6" />
-          Add Link
+          <span className="hidden md:block">Add Note</span>
         </Button>
 
-        <Button variant="outline" className="cursor-pointer">
-          <HiPencil className="size-6" />
-          Edit Link
+        <Button
+          onClick={openDialogSettings}
+          variant="outline"
+          className="size-9 cursor-pointer md:size-auto"
+        >
+          <HiOutlineCog6Tooth className="size-6" />
+          <span className="hidden md:block">Configurações</span>
         </Button>
       </div>
     </div>

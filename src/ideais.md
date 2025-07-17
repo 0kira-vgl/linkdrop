@@ -1,0 +1,6 @@
+- um add de notas;
+- por senha nas notas (como fica nome & descrição?);
+- buscar notas;
+- edição com botao direito;
+- data de criação no footer
+- usar markdonw
