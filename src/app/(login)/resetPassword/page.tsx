@@ -11,10 +11,30 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { resetPassword } from "@/firebase/authentication";
+import { getFirebaseErrorMessage } from "@/firebase/firebaseErrors";
+import { FirebaseError } from "firebase/app";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export default function ResetPassword() {
   const router = useRouter();
+
+  const [email, setEmail] = useState("");
+  const [erro, setErro] = useState("");
+
+  async function handleResetPassword() {
+    try {
+      await resetPassword(email);
+      router.push("/resetPassword/emailSent");
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        setErro(getFirebaseErrorMessage(err.code));
+      } else {
+        setErro("Erro inesperado. Tente novamente.");
+      }
+    }
+  }
 
   return (
     <Card className="w-full max-w-sm">
@@ -34,20 +54,19 @@ export default function ResetPassword() {
                 type="email"
                 placeholder="m@example.com"
                 required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
           </div>
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button
-          type="submit"
-          className="w-full"
-          onClick={() => router.push("/resetPassword/emailSent")}
-        >
+        <Button type="submit" className="w-full" onClick={handleResetPassword}>
           Enviar código
         </Button>
       </CardFooter>
+      {erro && <p>{erro}</p>}
     </Card>
   );
 }

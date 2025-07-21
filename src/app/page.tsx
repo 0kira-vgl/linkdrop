@@ -1,4 +1,4 @@
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import Link from "next/link";
 
 export default function Home() {
@@ -17,19 +17,25 @@ export default function Home() {
         </div>
 
         <div className="flex gap-2.5">
-          <Button>
-            <Link href="/dashboard">Começar</Link>
-          </Button>
+          <Link
+            className={buttonVariants({
+              size: "lg",
+            })}
+            href="/signIn"
+          >
+            <span className="text-base">Começar</span>
+          </Link>
 
           <a
             href="https://github.com/0kira-vgl/linkdrop"
             target="_blank"
             rel="noopener noreferrer"
             className={buttonVariants({
-              variant: "ghost",
+              variant: "outline",
+              size: "lg",
             })}
           >
-            GitHub
+            <span className="text-base">GitHub</span>
           </a>
         </div>
       </div>
