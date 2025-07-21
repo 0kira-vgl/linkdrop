@@ -23,10 +23,16 @@ import {
   CardDescription,
   CardFooter,
 } from "@/components/ui/card";
+import { useProtectedRoute } from "@/hooks/useProtectedRoute";
 
 export default function Dashboard() {
+  const { user, loading } = useProtectedRoute();
+
   const [openDialogSettings, setOpenDialogSettings] = useState(false);
   const [openDialogAddNote, setOpenDialogAddNotes] = useState(false);
+
+  if (loading) return <p>Carregando...</p>;
+  if (!user) return null;
 
   return (
     <div>
@@ -34,7 +40,6 @@ export default function Dashboard() {
         openDialogSettings={() => setOpenDialogSettings(true)}
         openDialogAddNote={() => setOpenDialogAddNotes(true)}
       />
-
       <div className="mx-auto my-12 max-w-6xl px-5">
         <div className="grid auto-rows-[250px] grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           <Card className="flex flex-col rounded-md outline-none">
@@ -48,7 +53,6 @@ export default function Dashboard() {
           </Card>
         </div>
       </div>
-
       <Dialog open={openDialogAddNote} onOpenChange={setOpenDialogAddNotes}>
         <form>
           <DialogContent className="sm:max-w-[425px]">
@@ -85,7 +89,6 @@ export default function Dashboard() {
           </DialogContent>
         </form>
       </Dialog>
-
       <Dialog open={openDialogSettings} onOpenChange={setOpenDialogSettings}>
         <form>
           <DialogContent className="sm:max-w-[425px]">

@@ -2,5 +2,6 @@
 - por senha nas notas (como fica nome & descrição?);
 - buscar notas;
 - edição com botao direito;
-- data de criação no footer
-- usar markdonw
+- data de criação no footer;
+- usar markdonw;
+- add toast feedbck;
