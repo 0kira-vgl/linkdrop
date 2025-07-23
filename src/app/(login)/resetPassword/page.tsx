@@ -14,16 +14,20 @@ import { Label } from "@/components/ui/label";
 import { resetPassword } from "@/firebase/authentication";
 import { getFirebaseErrorMessage } from "@/firebase/firebaseErrors";
 import { FirebaseError } from "firebase/app";
+import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 export default function ResetPassword() {
   const router = useRouter();
 
+  const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [erro, setErro] = useState("");
 
   async function handleResetPassword() {
+    setIsLoading(true);
     try {
       await resetPassword(email);
       router.push("/resetPassword/emailSent");
@@ -33,6 +37,7 @@ export default function ResetPassword() {
       } else {
         setErro("Erro inesperado. Tente novamente.");
       }
+      setIsLoading(false);
     }
   }
 
@@ -62,7 +67,15 @@ export default function ResetPassword() {
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full" onClick={handleResetPassword}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoading}
+          onClick={handleResetPassword}
+        >
+          <Loader2Icon
+            className={twMerge(isLoading ? "block animate-spin" : "hidden")}
+          />
           Enviar código
         </Button>
       </CardFooter>

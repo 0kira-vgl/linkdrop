@@ -15,18 +15,23 @@ import { Label } from "@/components/ui/label";
 import { loginWithGoogle, register } from "@/firebase/authentication";
 import { getFirebaseErrorMessage } from "@/firebase/firebaseErrors";
 import { FirebaseError } from "firebase/app";
+import { Loader2Icon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { twMerge } from "tailwind-merge";
 
 export default function SignUp() {
   const router = useRouter();
 
+  const [isLoadingRegister, setIsLoadingRegister] = useState(false);
+  const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [erro, setErro] = useState("");
 
   async function handleRegister() {
+    setIsLoadingRegister(true);
     try {
       await register(email, password);
       router.push("/dashboard");
@@ -36,10 +41,12 @@ export default function SignUp() {
       } else {
         setErro("Erro inesperado. Tente novamente.");
       }
+      setIsLoadingRegister(false); // só reseta o loading se der erro
     }
   }
 
   async function handleLoginWithGoogle() {
+    setIsLoadingGoogle(true);
     try {
       await loginWithGoogle();
       router.push("/dashboard");
@@ -49,6 +56,7 @@ export default function SignUp() {
       } else {
         setErro("Erro inesperado. Tente novamente.");
       }
+      setIsLoadingGoogle(false);
     }
   }
 
@@ -97,15 +105,31 @@ export default function SignUp() {
         </form>
       </CardContent>
       <CardFooter className="flex-col gap-2">
-        <Button type="submit" className="w-full" onClick={handleRegister}>
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={isLoadingRegister || isLoadingGoogle}
+          onClick={handleRegister}
+        >
+          <Loader2Icon
+            className={twMerge(
+              isLoadingRegister ? "block animate-spin" : "hidden",
+            )}
+          />
           Criar
         </Button>
         <Button
           variant="outline"
           className="w-full"
+          disabled={isLoadingRegister || isLoadingGoogle}
           onClick={handleLoginWithGoogle}
         >
-          Login with Google
+          <Loader2Icon
+            className={twMerge(
+              isLoadingGoogle ? "block animate-spin" : "hidden",
+            )}
+          />
+          Criar com Google
         </Button>
       </CardFooter>
       {erro && <p>{erro}</p>}

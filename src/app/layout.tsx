@@ -3,7 +3,7 @@ import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
 
 export const metadata: Metadata = {
-  title: "linkDrop",
+  title: "Notely",
 };
 
 export default function RootLayout({
