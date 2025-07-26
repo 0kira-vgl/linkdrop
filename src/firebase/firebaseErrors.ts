@@ -8,6 +8,7 @@ export function getFirebaseErrorMessage(code: string) {
     "auth/too-many-requests": "Muitas tentativas. Tente novamente mais tarde.",
     "auth/popup-closed-by-user": "Login cancelado pelo usuário.",
     "auth/popup-blocked": "O pop-up foi bloqueado pelo navegador.",
+    "auth/invalid-credential": "Email ou senha inválidos.",
   };
 
   return messages[code] || "Erro inesperado. Tente novamente.";

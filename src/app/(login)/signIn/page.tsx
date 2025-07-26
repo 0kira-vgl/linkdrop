@@ -20,6 +20,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function SignIn() {
   const router = useRouter();
@@ -28,7 +30,6 @@ export default function SignIn() {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [erro, setErro] = useState("");
 
   async function handleLogin() {
     setIsLoadingLogin(true);
@@ -38,9 +39,9 @@ export default function SignIn() {
       // não reseta o loading aqui, pois a tela será desmontada
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
-        setErro(getFirebaseErrorMessage(err.code));
+        toast.error(getFirebaseErrorMessage(err.code));
       } else {
-        setErro("Erro inesperado. Tente novamente.");
+        toast.error("Erro inesperado. Tente novamente.");
       }
       setIsLoadingLogin(false); // só reseta o loading se der erro
     }
@@ -53,9 +54,9 @@ export default function SignIn() {
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
-        setErro(getFirebaseErrorMessage(err.code));
+        toast.error(getFirebaseErrorMessage(err.code));
       } else {
-        setErro("Erro inesperado. Tente novamente.");
+        toast.error("Erro inesperado. Tente novamente.");
       }
       setIsLoadingGoogle(false);
     }
@@ -85,6 +86,7 @@ export default function SignIn() {
               type="email"
               placeholder="m@example.com"
               required
+              disabled={isLoadingLogin || isLoadingGoogle}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
@@ -103,11 +105,14 @@ export default function SignIn() {
               id="password"
               type="password"
               required
+              disabled={isLoadingLogin || isLoadingGoogle}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
         </div>
+
+        <Toaster richColors />
       </CardContent>
       <CardFooter className="flex-col gap-2">
         <Button
@@ -121,7 +126,7 @@ export default function SignIn() {
               isLoadingLogin ? "block animate-spin" : "hidden",
             )}
           />
-          Login
+          {isLoadingLogin ? "Entrando..." : "Login"}
         </Button>
         <Button
           variant="outline"
@@ -137,8 +142,6 @@ export default function SignIn() {
           Login com Google
         </Button>
       </CardFooter>
-
-      {erro && <p>{erro}</p>}
     </Card>
   );
 }

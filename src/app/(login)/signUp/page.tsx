@@ -20,6 +20,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { twMerge } from "tailwind-merge";
+import { toast } from "sonner";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function SignUp() {
   const router = useRouter();
@@ -28,7 +30,6 @@ export default function SignUp() {
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [erro, setErro] = useState("");
 
   async function handleRegister() {
     setIsLoadingRegister(true);
@@ -37,9 +38,9 @@ export default function SignUp() {
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
-        setErro(getFirebaseErrorMessage(err.code));
+        toast.error(getFirebaseErrorMessage(err.code));
       } else {
-        setErro("Erro inesperado. Tente novamente.");
+        toast.error("Erro inesperado. Tente novamente.");
       }
       setIsLoadingRegister(false); // só reseta o loading se der erro
     }
@@ -52,9 +53,9 @@ export default function SignUp() {
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
-        setErro(getFirebaseErrorMessage(err.code));
+        toast.error(getFirebaseErrorMessage(err.code));
       } else {
-        setErro("Erro inesperado. Tente novamente.");
+        toast.error("Erro inesperado. Tente novamente.");
       }
       setIsLoadingGoogle(false);
     }
@@ -76,33 +77,44 @@ export default function SignUp() {
         </CardAction>
       </CardHeader>
       <CardContent>
-        <form>
-          <div className="flex flex-col gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Senha</Label>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-              />
-            </div>
+        <div className="flex flex-col gap-6">
+          <div className="grid gap-2">
+            <Label htmlFor="name">Apelido</Label>
+            <Input
+              id="name"
+              placeholder="Como devemos te chamar?"
+              required
+              disabled={isLoadingRegister || isLoadingGoogle}
+            />
           </div>
-        </form>
+          <div className="grid gap-2">
+            <Label htmlFor="email">Email</Label>
+            <Input
+              id="email"
+              type="email"
+              placeholder="m@example.com"
+              required
+              disabled={isLoadingRegister || isLoadingGoogle}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
+            <div className="flex items-center">
+              <Label htmlFor="password">Senha</Label>
+            </div>
+            <Input
+              id="password"
+              type="password"
+              required
+              disabled={isLoadingRegister || isLoadingGoogle}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+        </div>
+
+        <Toaster richColors />
       </CardContent>
       <CardFooter className="flex-col gap-2">
         <Button
@@ -116,7 +128,7 @@ export default function SignUp() {
               isLoadingRegister ? "block animate-spin" : "hidden",
             )}
           />
-          Criar
+          {isLoadingRegister ? "Criando..." : "Criar"}
         </Button>
         <Button
           variant="outline"
@@ -132,7 +144,6 @@ export default function SignUp() {
           Criar com Google
         </Button>
       </CardFooter>
-      {erro && <p>{erro}</p>}
     </Card>
   );
 }
