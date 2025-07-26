@@ -22,19 +22,29 @@ import { useState } from "react";
 import { twMerge } from "tailwind-merge";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
+import { saveUserToFirestore } from "@/firebase/firestore";
 
 export default function SignUp() {
   const router = useRouter();
 
   const [isLoadingRegister, setIsLoadingRegister] = useState(false);
   const [isLoadingGoogle, setIsLoadingGoogle] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   async function handleRegister() {
     setIsLoadingRegister(true);
     try {
-      await register(email, password);
+      // cria o usuário com email e senha no firebase authentication
+      const userCredential = await register(email, password);
+
+      // pega os dados do usuário que acabou de ser criado (como uid e email)
+      const user = userCredential.user;
+
+      // salva os dados do usuário (uid, apelido e email) no cloud firestore
+      await saveUserToFirestore(user.uid, name, email);
+
       router.push("/dashboard");
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -85,6 +95,8 @@ export default function SignUp() {
               placeholder="Como devemos te chamar?"
               required
               disabled={isLoadingRegister || isLoadingGoogle}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
