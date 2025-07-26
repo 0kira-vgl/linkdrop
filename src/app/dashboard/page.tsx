@@ -24,15 +24,44 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
+import { saveNote } from "@/firebase/firestore";
+import { toast } from "sonner";
+import { Loader2Icon } from "lucide-react";
+import { twMerge } from "tailwind-merge";
+import { Toaster } from "@/components/ui/sonner";
 
 export default function Dashboard() {
   const { user, loading } = useProtectedRoute();
+
+  const [noteName, setNoteName] = useState("");
+  const [noteDescription, setNoteDescription] = useState("");
+  const [loadingCreategNote, setLoadingCreategNote] = useState(false);
 
   const [openDialogSettings, setOpenDialogSettings] = useState(false);
   const [openDialogAddNote, setOpenDialogAddNotes] = useState(false);
 
   if (loading) return <p>Carregando...</p>;
   if (!user) return null;
+
+  async function handleCreateNote(e: React.FormEvent) {
+    e.preventDefault();
+    setLoadingCreategNote(true);
+
+    if (!user) return null;
+
+    try {
+      await saveNote(user.uid, noteName, noteDescription);
+      toast.success("Nota criada com sucesso!");
+      setNoteName("");
+      setNoteDescription("");
+      setOpenDialogAddNotes(false); // fecha o dialog
+    } catch (error) {
+      console.error("Erro ao salvar nota:", error);
+      toast.error("Erro ao salvar nota.");
+    } finally {
+      setLoadingCreategNote(false);
+    }
+  }
 
   return (
     <div>
@@ -54,8 +83,8 @@ export default function Dashboard() {
         </div>
       </div>
       <Dialog open={openDialogAddNote} onOpenChange={setOpenDialogAddNotes}>
-        <form>
-          <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleCreateNote} className="space-y-4">
             <DialogHeader>
               <DialogTitle>Criar Nota</DialogTitle>
               <DialogDescription>
@@ -69,6 +98,9 @@ export default function Dashboard() {
                   id="nameNote"
                   placeholder="Treino upper/lower"
                   required
+                  disabled={loadingCreategNote}
+                  value={noteName}
+                  onChange={(e) => setNoteName(e.target.value)}
                 />
               </div>
               <div className="grid gap-2">
@@ -77,17 +109,30 @@ export default function Dashboard() {
                   id="description"
                   placeholder="Nesse treino, vamos focar em..."
                   className="h-28"
+                  required
+                  disabled={loadingCreategNote}
+                  value={noteDescription}
+                  onChange={(e) => setNoteDescription(e.target.value)}
                 />
               </div>
             </div>
             <DialogFooter>
               <DialogClose asChild>
-                <Button variant="outline">Cancelar</Button>
+                <Button variant="outline" disabled={loadingCreategNote}>
+                  Cancelar
+                </Button>
               </DialogClose>
-              <Button type="submit">Salvar</Button>
+              <Button type="submit" disabled={loadingCreategNote}>
+                <Loader2Icon
+                  className={twMerge(
+                    loadingCreategNote ? "block animate-spin" : "hidden",
+                  )}
+                />
+                {loadingCreategNote ? "Criando..." : "Criar"}
+              </Button>
             </DialogFooter>
-          </DialogContent>
-        </form>
+          </form>
+        </DialogContent>
       </Dialog>
       <Dialog open={openDialogSettings} onOpenChange={setOpenDialogSettings}>
         <form>
@@ -144,6 +189,8 @@ export default function Dashboard() {
           </DialogContent>
         </form>
       </Dialog>
+
+      <Toaster richColors />
     </div>
   );
 }

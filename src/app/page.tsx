@@ -21,7 +21,7 @@ export default function Home() {
             className={buttonVariants({
               size: "lg",
             })}
-            href="/signIn"
+            href="/dashboard"
           >
             <span className="text-base">Começar</span>
           </Link>

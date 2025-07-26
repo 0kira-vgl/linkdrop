@@ -31,7 +31,8 @@ export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  async function handleLogin() {
+  async function handleLogin(e: React.FormEvent) {
+    e.preventDefault();
     setIsLoadingLogin(true);
     try {
       await login(email, password);
@@ -77,71 +78,72 @@ export default function SignIn() {
           </Link>
         </CardAction>
       </CardHeader>
-      <CardContent>
-        <div className="flex flex-col gap-6">
-          <div className="grid gap-2">
-            <Label htmlFor="email">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="m@example.com"
-              required
-              disabled={isLoadingLogin || isLoadingGoogle}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className="grid gap-2">
-            <div className="flex items-center">
-              <Label htmlFor="password">Senha</Label>
-              <a
-                href="/resetPassword"
-                className="ml-auto inline-block text-sm font-medium underline-offset-4 hover:underline"
-              >
-                Esqueceu sua senha?
-              </a>
+      <form onSubmit={handleLogin} className="space-y-6">
+        <CardContent>
+          <div className="flex flex-col gap-6">
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="m@example.com"
+                required
+                disabled={isLoadingLogin || isLoadingGoogle}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-            <Input
-              id="password"
-              type="password"
-              required
-              disabled={isLoadingLogin || isLoadingGoogle}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
+            <div className="grid gap-2">
+              <div className="flex items-center">
+                <Label htmlFor="password">Senha</Label>
+                <a
+                  href="/resetPassword"
+                  className="ml-auto inline-block text-sm font-medium underline-offset-4 hover:underline"
+                >
+                  Esqueceu sua senha?
+                </a>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                required
+                disabled={isLoadingLogin || isLoadingGoogle}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
           </div>
-        </div>
 
-        <Toaster richColors />
-      </CardContent>
-      <CardFooter className="flex-col gap-2">
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isLoadingLogin || isLoadingGoogle}
-          onClick={handleLogin}
-        >
-          <Loader2Icon
-            className={twMerge(
-              isLoadingLogin ? "block animate-spin" : "hidden",
-            )}
-          />
-          {isLoadingLogin ? "Entrando..." : "Login"}
-        </Button>
-        <Button
-          variant="outline"
-          className="w-full"
-          disabled={isLoadingLogin || isLoadingGoogle}
-          onClick={handleLoginWithGoogle}
-        >
-          <Loader2Icon
-            className={twMerge(
-              isLoadingGoogle ? "block animate-spin" : "hidden",
-            )}
-          />
-          Login com Google
-        </Button>
-      </CardFooter>
+          <Toaster richColors />
+        </CardContent>
+        <CardFooter className="flex-col gap-2">
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoadingLogin || isLoadingGoogle}
+          >
+            <Loader2Icon
+              className={twMerge(
+                isLoadingLogin ? "block animate-spin" : "hidden",
+              )}
+            />
+            {isLoadingLogin ? "Entrando..." : "Login"}
+          </Button>
+          <Button
+            variant="outline"
+            className="w-full"
+            disabled={isLoadingLogin || isLoadingGoogle}
+            onClick={handleLoginWithGoogle}
+          >
+            <Loader2Icon
+              className={twMerge(
+                isLoadingGoogle ? "block animate-spin" : "hidden",
+              )}
+            />
+            Login com Google
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 }
