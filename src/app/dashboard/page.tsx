@@ -24,7 +24,13 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { editNote, getNotes, Note, saveNote } from "@/firebase/firestore";
+import {
+  deleteNote,
+  editNote,
+  getNotes,
+  Note,
+  saveNote,
+} from "@/firebase/firestore";
 import { toast } from "sonner";
 import { Loader2Icon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -105,6 +111,20 @@ export default function Dashboard() {
     }
   }
 
+  async function handleDeleteNote(noteId: string) {
+    if (!user) return;
+
+    try {
+      await deleteNote(user.uid, noteId);
+      toast.success("Nota excluída com sucesso!");
+
+      // atualiza a lista depois de excluir
+      setNotes((prev) => prev.filter((note) => note.id !== noteId));
+    } catch {
+      toast.error("Erro ao excluir nota.");
+    }
+  }
+
   useEffect(() => {
     async function fetchNotes() {
       if (!user) return;
@@ -164,7 +184,7 @@ export default function Dashboard() {
                         </CardDescription>
                       </CardHeader>
                       <CardFooter>
-                        <CardDescription>
+                        <CardDescription className="select-none">
                           {note.createdAt?.toDate
                             ? new Date(
                                 note.createdAt.toDate(),
@@ -193,7 +213,10 @@ export default function Dashboard() {
                             <HiPencilAlt />
                           </ContextMenuShortcut>
                         </ContextMenuItem>
-                        <ContextMenuItem variant="destructive">
+                        <ContextMenuItem
+                          variant="destructive"
+                          onClick={() => handleDeleteNote(note.id)}
+                        >
                           Delete
                           <ContextMenuShortcut>
                             <MdDelete className="text-destructive" />

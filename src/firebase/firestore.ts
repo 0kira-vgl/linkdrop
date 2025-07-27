@@ -3,6 +3,7 @@ import { db } from "./firebaseConfig";
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   DocumentData,
   getDocs,
@@ -83,12 +84,21 @@ export async function getNotes(uid: string): Promise<Note[]> {
   }
 }
 
+// recebe o uid do usuário, o id da nota, o novo nome e a nova descrição
 export async function editNote(
-  uid: string,
-  noteId: string,
-  name: string,
-  description: string,
+  uid: string, // ID do usuário
+  noteId: string, // ID da nota a ser editada
+  name: string, // Novo nome da nota
+  description: string, // Nova descrição da nota
 ) {
+  // cria uma referência para o documento da nota específica dentro da coleção "notes" do usuário
   const noteRef = doc(db, "users", uid, "notes", noteId);
+  // atualiza o documento da nota com os novos valores de nome e descrição
   await updateDoc(noteRef, { name, description });
+}
+
+export async function deleteNote(uid: string, noteId: string) {
+  // cria uma referência para o documento da nota específica dentro da coleção "notes" do usuário
+  const noteRef = doc(db, "users", uid, "notes", noteId);
+  await deleteDoc(noteRef);
 }
