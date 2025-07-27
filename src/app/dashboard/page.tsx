@@ -24,7 +24,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { useProtectedRoute } from "@/hooks/useProtectedRoute";
-import { getNotes, Note, saveNote } from "@/firebase/firestore";
+import { editNote, getNotes, Note, saveNote } from "@/firebase/firestore";
 import { toast } from "sonner";
 import { Loader2Icon } from "lucide-react";
 import { twMerge } from "tailwind-merge";
@@ -33,6 +33,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { GoPlus } from "react-icons/go";
 import Image from "next/image";
 import NoteImg from "@/assets/note.svg";
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from "@/components/ui/context-menu";
+import { HiPencilAlt } from "react-icons/hi";
+import { MdDelete } from "react-icons/md";
+import { FaRegFolderOpen } from "react-icons/fa";
 
 export default function Dashboard() {
   const { user, loading } = useProtectedRoute();
@@ -40,11 +50,14 @@ export default function Dashboard() {
   const [noteName, setNoteName] = useState("");
   const [noteDescription, setNoteDescription] = useState("");
   const [loadingCreategNote, setLoadingCreategNote] = useState(false);
+  const [loadingEditNote, setLoadingEditNote] = useState(false);
   const [notes, setNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
+  const [noteToEdit, setNoteToEdit] = useState<Note | null>(null); // estado pra saber qual nota está sendo editada
 
   const [openDialogSettings, setOpenDialogSettings] = useState(false);
-  const [openDialogAddNote, setOpenDialogAddNotes] = useState(false);
+  const [openDialogAddNote, setOpenDialogAddNote] = useState(false);
+  const [openDialogEditNote, setOpenDialogEditNote] = useState(false);
 
   async function handleCreateNote(e: React.FormEvent) {
     e.preventDefault();
@@ -57,16 +70,38 @@ export default function Dashboard() {
       toast.success("Nota criada com sucesso!");
       setNoteName("");
       setNoteDescription("");
-      setOpenDialogAddNotes(false); // fecha o dialog
+      setOpenDialogAddNote(false); // fecha o dialog
 
       // atualiza as notas após criar uma nova
       const updatedNotes = await getNotes(user.uid);
       setNotes(updatedNotes);
-    } catch (error) {
-      console.error("Erro ao salvar nota:", error);
+    } catch {
       toast.error("Erro ao salvar nota.");
     } finally {
       setLoadingCreategNote(false);
+    }
+  }
+
+  async function handleEditNote(e: React.FormEvent) {
+    e.preventDefault();
+    setLoadingEditNote(true);
+
+    if (!user || !noteToEdit) return;
+
+    try {
+      await editNote(user.uid, noteToEdit.id, noteName, noteDescription);
+      toast.success("Nota editada com sucesso!");
+      setNoteName("");
+      setNoteDescription("");
+      setNoteToEdit(null);
+      setOpenDialogEditNote(false);
+
+      const updatedNotes = await getNotes(user.uid);
+      setNotes(updatedNotes);
+    } catch {
+      toast.error("Erro ao editar nota.");
+    } finally {
+      setLoadingEditNote(false);
     }
   }
 
@@ -97,7 +132,7 @@ export default function Dashboard() {
     <div>
       <Header
         openDialogSettings={() => setOpenDialogSettings(true)}
-        openDialogAddNote={() => setOpenDialogAddNotes(true)}
+        openDialogAddNote={() => setOpenDialogAddNote(true)}
       />
       <div className="mx-auto my-12 max-w-6xl px-5">
         <div className="grid auto-rows-[250px] grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -111,22 +146,63 @@ export default function Dashboard() {
           ) : (
             <>
               {notes.map((note) => (
-                <Card
-                  key={note.id}
-                  className="flex flex-col justify-between rounded-md outline-none"
-                >
-                  <CardHeader>
-                    <CardTitle>{note.name}</CardTitle>
-                    <CardDescription>{note.description}</CardDescription>
-                  </CardHeader>
-                  <CardFooter className="mt-4">
-                    <CardDescription>
-                      {note.createdAt?.toDate
-                        ? new Date(note.createdAt.toDate()).toLocaleDateString()
-                        : "Data desconhecida"}
-                    </CardDescription>
-                  </CardFooter>
-                </Card>
+                <ContextMenu key={note.id}>
+                  <ContextMenuTrigger asChild>
+                    <Card className="flex flex-col justify-between rounded-md outline-none">
+                      <CardHeader>
+                        <CardTitle
+                          className="mb-1.5 line-clamp-2"
+                          title={note.name}
+                        >
+                          {note.name}
+                        </CardTitle>
+                        <CardDescription
+                          className="line-clamp-6 break-words whitespace-normal"
+                          title={note.description}
+                        >
+                          {note.description}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardFooter>
+                        <CardDescription>
+                          {note.createdAt?.toDate
+                            ? new Date(
+                                note.createdAt.toDate(),
+                              ).toLocaleDateString()
+                            : "Data desconhecida"}
+                        </CardDescription>
+                      </CardFooter>
+
+                      <ContextMenuContent className="w-48">
+                        <ContextMenuItem>
+                          Abrir
+                          <ContextMenuShortcut>
+                            <FaRegFolderOpen />
+                          </ContextMenuShortcut>
+                        </ContextMenuItem>
+                        <ContextMenuItem
+                          onClick={() => {
+                            setNoteToEdit(note);
+                            setNoteName(note.name);
+                            setNoteDescription(note.description);
+                            setOpenDialogEditNote(true);
+                          }}
+                        >
+                          Editar
+                          <ContextMenuShortcut>
+                            <HiPencilAlt />
+                          </ContextMenuShortcut>
+                        </ContextMenuItem>
+                        <ContextMenuItem variant="destructive">
+                          Delete
+                          <ContextMenuShortcut>
+                            <MdDelete className="text-destructive" />
+                          </ContextMenuShortcut>
+                        </ContextMenuItem>
+                      </ContextMenuContent>
+                    </Card>
+                  </ContextMenuTrigger>
+                </ContextMenu>
               ))}
               {notes.length === 0 && (
                 <div className="col-span-full flex min-h-[60vh] w-full flex-col items-center justify-center">
@@ -145,7 +221,7 @@ export default function Dashboard() {
                     </h1>
                     <Button
                       variant="outline"
-                      onClick={() => setOpenDialogAddNotes(true)}
+                      onClick={() => setOpenDialogAddNote(true)}
                     >
                       <GoPlus className="size-6" />
                       Criar Nota
@@ -157,7 +233,7 @@ export default function Dashboard() {
           )}
         </div>
       </div>
-      <Dialog open={openDialogAddNote} onOpenChange={setOpenDialogAddNotes}>
+      <Dialog open={openDialogAddNote} onOpenChange={setOpenDialogAddNote}>
         <DialogContent className="sm:max-w-[425px]">
           <form onSubmit={handleCreateNote} className="space-y-4">
             <DialogHeader>
@@ -171,7 +247,7 @@ export default function Dashboard() {
                 <Label htmlFor="nameNote">Nome do Nota</Label>
                 <Input
                   id="nameNote"
-                  placeholder="Treino upper/lower"
+                  placeholder="Título da sua próxima grande ideia"
                   required
                   disabled={loadingCreategNote}
                   value={noteName}
@@ -182,7 +258,7 @@ export default function Dashboard() {
                 <Label htmlFor="description">Descrição</Label>
                 <Textarea
                   id="description"
-                  placeholder="Nesse treino, vamos focar em..."
+                  placeholder="Pensamentos soltos começam aqui..."
                   className="h-28"
                   required
                   disabled={loadingCreategNote}
@@ -209,6 +285,59 @@ export default function Dashboard() {
           </form>
         </DialogContent>
       </Dialog>
+      <Dialog open={openDialogEditNote} onOpenChange={setOpenDialogEditNote}>
+        <DialogContent className="sm:max-w-[425px]">
+          <form onSubmit={handleEditNote} className="space-y-4">
+            <DialogHeader>
+              <DialogTitle>Editar Nota</DialogTitle>
+              <DialogDescription>
+                Crie uma nota e comece já a escrever!
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="nameNote">Nome do Nota</Label>
+                <Input
+                  id="nameNote"
+                  placeholder="Nada aqui... que tal mudar isso?"
+                  required
+                  disabled={loadingEditNote}
+                  value={noteName}
+                  onChange={(e) => setNoteName(e.target.value)}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="description">Descrição</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Ei, você apagou tudo? Escreve algo novo!"
+                  className="h-28"
+                  required
+                  disabled={loadingEditNote}
+                  value={noteDescription}
+                  onChange={(e) => setNoteDescription(e.target.value)}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline" disabled={loadingEditNote}>
+                  Cancelar
+                </Button>
+              </DialogClose>
+              <Button type="submit" disabled={loadingEditNote}>
+                <Loader2Icon
+                  className={twMerge(
+                    loadingEditNote ? "block animate-spin" : "hidden",
+                  )}
+                />
+                {loadingEditNote ? "Editando..." : "Editar"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={openDialogSettings} onOpenChange={setOpenDialogSettings}>
         <form>
           <DialogContent className="sm:max-w-[425px]">

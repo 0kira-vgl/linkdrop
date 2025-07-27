@@ -8,6 +8,7 @@ import {
   getDocs,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 export type Note = {
@@ -80,4 +81,14 @@ export async function getNotes(uid: string): Promise<Note[]> {
     toast.error("Erro ao buscar notas.");
     throw error;
   }
+}
+
+export async function editNote(
+  uid: string,
+  noteId: string,
+  name: string,
+  description: string,
+) {
+  const noteRef = doc(db, "users", uid, "notes", noteId);
+  await updateDoc(noteRef, { name, description });
 }

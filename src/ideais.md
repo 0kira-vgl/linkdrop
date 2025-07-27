@@ -5,3 +5,4 @@
 - data de criação no footer;
 - usar markdonw;
 - add toast feedbck;
+- rich text editor library react;
