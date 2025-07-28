@@ -1,7 +1,7 @@
 "use client";
 
 import { Header } from "@/components/header";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,6 +49,17 @@ import {
 import { HiPencilAlt } from "react-icons/hi";
 import { MdDelete } from "react-icons/md";
 import { FaRegFolderOpen } from "react-icons/fa";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function Dashboard() {
   const { user, loading } = useProtectedRoute();
@@ -60,6 +71,7 @@ export default function Dashboard() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loadingNotes, setLoadingNotes] = useState(true);
   const [noteToEdit, setNoteToEdit] = useState<Note | null>(null); // estado pra saber qual nota está sendo editada
+  const [loadingDeleteNote, setLoadingDeleteNote] = useState(false);
 
   const [openDialogSettings, setOpenDialogSettings] = useState(false);
   const [openDialogAddNote, setOpenDialogAddNote] = useState(false);
@@ -112,6 +124,8 @@ export default function Dashboard() {
   }
 
   async function handleDeleteNote(noteId: string) {
+    setLoadingDeleteNote(true);
+
     if (!user) return;
 
     try {
@@ -122,6 +136,8 @@ export default function Dashboard() {
       setNotes((prev) => prev.filter((note) => note.id !== noteId));
     } catch {
       toast.error("Erro ao excluir nota.");
+    } finally {
+      setLoadingDeleteNote(false);
     }
   }
 
@@ -171,20 +187,20 @@ export default function Dashboard() {
                     <Card className="flex flex-col justify-between rounded-md outline-none">
                       <CardHeader>
                         <CardTitle
-                          className="mb-1.5 line-clamp-2"
+                          className="mb-1.5 line-clamp-2 select-none md:select-auto"
                           title={note.name}
                         >
                           {note.name}
                         </CardTitle>
                         <CardDescription
-                          className="line-clamp-6 break-words whitespace-normal"
+                          className="line-clamp-6 break-words whitespace-normal select-none md:select-auto"
                           title={note.description}
                         >
                           {note.description}
                         </CardDescription>
                       </CardHeader>
                       <CardFooter>
-                        <CardDescription className="select-none">
+                        <CardDescription className="select-none md:select-auto">
                           {note.createdAt?.toDate
                             ? new Date(
                                 note.createdAt.toDate(),
@@ -193,36 +209,71 @@ export default function Dashboard() {
                         </CardDescription>
                       </CardFooter>
 
-                      <ContextMenuContent className="w-48">
-                        <ContextMenuItem>
-                          Abrir
-                          <ContextMenuShortcut>
-                            <FaRegFolderOpen />
-                          </ContextMenuShortcut>
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          onClick={() => {
-                            setNoteToEdit(note);
-                            setNoteName(note.name);
-                            setNoteDescription(note.description);
-                            setOpenDialogEditNote(true);
-                          }}
-                        >
-                          Editar
-                          <ContextMenuShortcut>
-                            <HiPencilAlt />
-                          </ContextMenuShortcut>
-                        </ContextMenuItem>
-                        <ContextMenuItem
-                          variant="destructive"
-                          onClick={() => handleDeleteNote(note.id)}
-                        >
-                          Delete
-                          <ContextMenuShortcut>
-                            <MdDelete className="text-destructive" />
-                          </ContextMenuShortcut>
-                        </ContextMenuItem>
-                      </ContextMenuContent>
+                      <AlertDialog>
+                        <ContextMenuContent className="w-48">
+                          <ContextMenuItem>
+                            Abrir
+                            <ContextMenuShortcut>
+                              <FaRegFolderOpen />
+                            </ContextMenuShortcut>
+                          </ContextMenuItem>
+                          <ContextMenuItem
+                            onClick={() => {
+                              setNoteToEdit(note);
+                              setNoteName(note.name);
+                              setNoteDescription(note.description);
+                              setOpenDialogEditNote(true);
+                            }}
+                          >
+                            Editar
+                            <ContextMenuShortcut>
+                              <HiPencilAlt />
+                            </ContextMenuShortcut>
+                          </ContextMenuItem>
+                          <AlertDialogTrigger asChild>
+                            <ContextMenuItem variant="destructive">
+                              Excluir
+                              <ContextMenuShortcut>
+                                <MdDelete className="text-destructive" />
+                              </ContextMenuShortcut>
+                            </ContextMenuItem>
+                          </AlertDialogTrigger>
+                        </ContextMenuContent>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>
+                              Tem certeza que deseja excluir?
+                            </AlertDialogTitle>
+                            <AlertDialogDescription>
+                              A nota{" "}
+                              <span className="font-bold">{note.name}</span>{" "}
+                              será excluída permanentemente e não poderá ser
+                              recuperada. Pense bem antes de dizer adeus...
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel disabled={loadingDeleteNote}>
+                              Cancelar
+                            </AlertDialogCancel>
+                            <AlertDialogAction
+                              className={buttonVariants({
+                                variant: "destructive",
+                              })}
+                              onClick={() => handleDeleteNote(note.id)}
+                              disabled={loadingDeleteNote}
+                            >
+                              <Loader2Icon
+                                className={twMerge(
+                                  loadingDeleteNote
+                                    ? "block animate-spin"
+                                    : "hidden",
+                                )}
+                              />
+                              {loadingDeleteNote ? "Excluindo..." : "Excluir"}
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </Card>
                   </ContextMenuTrigger>
                 </ContextMenu>
@@ -314,7 +365,7 @@ export default function Dashboard() {
             <DialogHeader>
               <DialogTitle>Editar Nota</DialogTitle>
               <DialogDescription>
-                Crie uma nota e comece já a escrever!
+                Mudou de ideia? Sem problema, edite à vontade!
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-6">
