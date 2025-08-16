@@ -45,7 +45,7 @@ export function Header({
   }, []);
 
   return (
-    <div className="flex items-center justify-between border-b p-4">
+    <div className="flex items-center justify-between border-b p-4 select-none md:select-auto">
       <div className="flex items-center gap-2.5">
         <Avatar className="size-10 md:size-11">
           <AvatarImage src="https://github.com/0kira-vgl.png" />

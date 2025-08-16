@@ -184,23 +184,26 @@ export default function Dashboard() {
               {notes.map((note) => (
                 <ContextMenu key={note.id}>
                   <ContextMenuTrigger asChild>
-                    <Card className="flex flex-col justify-between rounded-md outline-none">
+                    <Card
+                      className="flex cursor-pointer flex-col justify-between rounded-md outline-none select-none md:select-auto"
+                      onClick={() => console.log("note clicked")}
+                    >
                       <CardHeader>
                         <CardTitle
-                          className="mb-1.5 line-clamp-2 select-none md:select-auto"
+                          className="mb-1.5 line-clamp-2"
                           title={note.name}
                         >
                           {note.name}
                         </CardTitle>
                         <CardDescription
-                          className="line-clamp-6 break-words whitespace-normal select-none md:select-auto"
+                          className="line-clamp-6 break-words whitespace-normal"
                           title={note.description}
                         >
                           {note.description}
                         </CardDescription>
                       </CardHeader>
                       <CardFooter>
-                        <CardDescription className="select-none md:select-auto">
+                        <CardDescription>
                           {note.createdAt?.toDate
                             ? new Date(
                                 note.createdAt.toDate(),
@@ -208,7 +211,6 @@ export default function Dashboard() {
                             : "Data desconhecida"}
                         </CardDescription>
                       </CardFooter>
-
                       <AlertDialog>
                         <ContextMenuContent className="w-48">
                           <ContextMenuItem>
