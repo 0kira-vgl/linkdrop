@@ -4,7 +4,6 @@ import { Header } from "@/components/header";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect, useState } from "react";
 import {
   Dialog,
@@ -60,6 +59,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 export default function Dashboard() {
   const { user, loading } = useProtectedRoute();
@@ -161,7 +161,12 @@ export default function Dashboard() {
     fetchNotes();
   }, [user]);
 
-  if (loading) return <p>Carregando...</p>;
+  if (loading)
+    return (
+      <div className="flex h-screen w-full items-center justify-center">
+        <AiOutlineLoading3Quarters className="animate-spin opacity-50" />
+      </div>
+    );
   if (!user) return null;
 
   return (
@@ -424,19 +429,6 @@ export default function Dashboard() {
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col gap-6">
-              <div className="grid items-center justify-center gap-2">
-                <Label htmlFor="avatar" className="justify-center">
-                  Avatar
-                </Label>
-
-                <Avatar id="avatar" className="size-28">
-                  <AvatarImage src="https://github.com/0kira-vgl.png" />
-                  <AvatarFallback>MT</AvatarFallback>
-                </Avatar>
-
-                <Button variant="link">Alterar Avatar</Button>
-              </div>
-
               <div className="grid gap-2">
                 <Label htmlFor="email">Email</Label>
                 <Input

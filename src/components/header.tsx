@@ -1,4 +1,4 @@
-import { Avatar, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "./ui/button";
 import { GoPlus } from "react-icons/go";
 import { HiOutlineCog6Tooth } from "react-icons/hi2";
@@ -48,12 +48,12 @@ export function Header({
     <div className="flex items-center justify-between border-b p-4 select-none md:select-auto">
       <div className="flex items-center gap-2.5">
         <Avatar className="size-10 md:size-11">
-          <AvatarImage src="https://github.com/0kira-vgl.png" />
+          <AvatarFallback>0K</AvatarFallback>
         </Avatar>
 
         {name ? (
           <h1 className="text-lg font-medium">
-            Olá, <span>{name}</span>!
+            Olá, <span className="font-bold">{name}</span>!
           </h1>
         ) : (
           <Skeleton className="h-8 w-[200px]" />
