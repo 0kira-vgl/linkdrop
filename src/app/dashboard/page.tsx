@@ -60,6 +60,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import { getAuth } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/firebase/firebaseConfig";
 
 export default function Dashboard() {
   const { user, loading } = useProtectedRoute();
@@ -76,6 +79,9 @@ export default function Dashboard() {
   const [openDialogSettings, setOpenDialogSettings] = useState(false);
   const [openDialogAddNote, setOpenDialogAddNote] = useState(false);
   const [openDialogEditNote, setOpenDialogEditNote] = useState(false);
+
+  const [name, setName] = useState<string>("");
+  const [email, setEmail] = useState<string>("");
 
   async function handleCreateNote(e: React.FormEvent) {
     e.preventDefault();
@@ -141,24 +147,49 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => {
-    async function fetchNotes() {
-      if (!user) return;
+  async function fetchNotes() {
+    if (!user) return;
 
-      try {
-        // chama a função que busca as notas do Firestore, passando o UID do usuário
-        const userNotes = await getNotes(user.uid);
+    try {
+      // chama a função que busca as notas do Firestore, passando o UID do usuário
+      const userNotes = await getNotes(user.uid);
 
-        // atualiza o estado com as notas encontradas
-        setNotes(userNotes);
-      } catch (error) {
-        console.error("Erro ao carregar notas:", error);
-      } finally {
-        setLoadingNotes(false);
-      }
+      // atualiza o estado com as notas encontradas
+      setNotes(userNotes);
+    } catch (error) {
+      console.error("Erro ao carregar notas:", error);
+    } finally {
+      setLoadingNotes(false);
+    }
+  }
+
+  async function fetchUserCredentials() {
+    // pega a autenticação do firebase
+    const auth = getAuth();
+    // pega o usuário que está logado
+    const user = auth.currentUser;
+
+    // se não tiver usuário logado, para aqui
+    if (!user) return;
+
+    // cria uma referência ao documento do usuário no banco
+    const docRef = doc(db, "users", user.uid);
+    // busca os dados desse documento
+    const docSnap = await getDoc(docRef);
+
+    // se encontrou o documento, pega o nome e salva no estado
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      setName(data.name);
     }
 
+    // seta o email do usuário no estado
+    setEmail(user.email ?? "");
+  }
+
+  useEffect(() => {
     fetchNotes();
+    fetchUserCredentials();
   }, [user]);
 
   if (loading)
@@ -434,14 +465,14 @@ export default function Dashboard() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder={email}
                   required
                   disabled
                 />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="name">Nome</Label>
-                <Input id="name" placeholder="Matheus Tiburcio" required />
+                <Input id="name" placeholder={name} required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="password">Senha</Label>
